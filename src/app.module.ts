@@ -27,7 +27,7 @@ import { UserModule } from './user/user.module';
               }),
               
               ProductModule,
-              UserModule
+              UserModule,
 
   ],
   controllers: [AppController],
