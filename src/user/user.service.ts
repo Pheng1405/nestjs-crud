@@ -1,11 +1,12 @@
 import { HttpException, HttpStatus, Injectable, Request, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDto, LoginUserDto, UserDto } from './dto/user.dto';
+import { CreateUserDto, LoginUserDto } from './dto/user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user';
 import { LocalStrategy } from './strategy/local.strategy';
-import { ConfigService } from '@nestjs/config';
+import * as bcrypt from "bcrypt";
+
 @Injectable()
 export class UserService {
   
@@ -19,6 +20,7 @@ export class UserService {
 
     async register(createUserDto : CreateUserDto){
         try{
+            createUserDto.password = await this.hashPassword(createUserDto.password);
             const user = await this.userRepository.save({...createUserDto, access_token : this.getToken(createUserDto)});
             return user;
         }
@@ -31,7 +33,6 @@ export class UserService {
         
     }
 
-    
     async login(loginUserDto : LoginUserDto){
         const user  = await this.localStrategy.validate(loginUserDto.username, loginUserDto.password);
 
@@ -73,6 +74,9 @@ export class UserService {
         })
     }
 
+    public async  hashPassword  (password : string) : Promise<string>{
+        return await bcrypt.hash(password, 10);
+    }
 
 
     // async getTokens(userId: string, username: string) {
